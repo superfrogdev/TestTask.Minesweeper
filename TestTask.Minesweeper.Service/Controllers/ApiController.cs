@@ -1,6 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
+using AutoMapper;
+
+using MediatR;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestTask.Minesweeper.Service.Controllers
@@ -13,15 +17,26 @@ namespace TestTask.Minesweeper.Service.Controllers
 	public sealed class ApiController : ControllerBase
 	{
 		private readonly ILogger<ApiController> _logger;
+		private readonly ISender _sender;
+		private readonly IMapper _mapper;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="ApiController"/>.
 		/// </summary>
 		/// <param name="logger">Instance of <see cref="ILogger{TCategoryName}"/> for <see cref="ApiController"/>.</param>
+		/// <param name="sender">Instance of <see cref="ISender"/>.</param>
+		/// <param name="mapper">Instance of <see cref="IMapper"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="logger"/> cannot be <see langword="null"/>.</exception>
-		public ApiController(ILogger<ApiController> logger)
+		/// <exception cref="ArgumentNullException"><paramref name="sender"/> cannot be <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="mapper"/> cannot be <see langword="null"/>.</exception>
+		public ApiController(ILogger<ApiController> logger, ISender sender, IMapper mapper)
+			: base()
 		{
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+			_sender = sender ?? throw new ArgumentNullException(nameof(sender));
+
+			_mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
 		}
 
 		/// <summary>
@@ -34,12 +49,15 @@ namespace TestTask.Minesweeper.Service.Controllers
 		[ProducesResponseType(typeof(Api.GameState), (int)HttpStatusCode.OK, "application/json")]
 		[ProducesResponseType(typeof(Api.ErrorDescription), (int)HttpStatusCode.BadRequest, "application/json")]
 		[ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError, "application/json")]
-		public Task<ActionResult<Api.GameState>> NewGame([Required, FromBody] Api.NewGameParameters parameters, CancellationToken cancellationToken)
+		public async Task<ActionResult<Api.GameState>> NewGame([Required, FromBody] Api.NewGameParameters parameters, CancellationToken cancellationToken)
 		{
-			var stub = new Api.FieldType[,] { { Api.FieldType.Empty, Api.FieldType.Two }, { Api.FieldType.Mine, Api.FieldType.One } };
+			var command = _mapper.Map<Api.NewGameParameters, Application.Commands.CreateNewGame.Command>(parameters);
 
-			return Task.FromResult(new ActionResult<Api.GameState>(
-				new Api.GameState() { GameId = Guid.NewGuid(), Height = 1, Width = 1, IsCompleted = false, MinesCount = 0, Field = stub }));
+			var result = await _sender.Send(command, cancellationToken);
+			
+			var response = _mapper.Map<(Application.Commands.CreateNewGame.Result, Api.NewGameParameters), Api.GameState>((result, parameters));
+
+			return new ActionResult<Api.GameState>(response);
 		}
 
 		/// <summary>
@@ -52,11 +70,15 @@ namespace TestTask.Minesweeper.Service.Controllers
 		[ProducesResponseType(typeof(Api.GameState), (int)HttpStatusCode.OK, "application/json")]
 		[ProducesResponseType(typeof(Api.ErrorDescription), (int)HttpStatusCode.BadRequest, "application/json")]
 		[ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError, "application/json")]
-		public Task<ActionResult<Api.GameState>> NewTurn([Required, FromBody] Api.NewTurn newTurn, CancellationToken cancellationToken)
+		public async Task<ActionResult<Api.GameState>> NewTurn([Required, FromBody] Api.NewTurn newTurn, CancellationToken cancellationToken)
 		{
-			var stub = new Api.FieldType[,] { { Api.FieldType.Empty, Api.FieldType.Two }, { Api.FieldType.Mine, Api.FieldType.One } };
+			var command = _mapper.Map<Api.NewTurn, Application.Commands.MakeTurn.Command>(newTurn);
 
-			return Task.FromResult(new ActionResult<Api.GameState>(new Api.GameState() { GameId = Guid.NewGuid(), Height = 1, Width = 1, IsCompleted = true, MinesCount = 0, Field = stub }));
+			var result = await _sender.Send(command, cancellationToken);
+
+			var response = _mapper.Map<(Application.Commands.MakeTurn.Result, Api.NewTurn), Api.GameState>((result, newTurn));
+
+			return new ActionResult<Api.GameState>(response);
 		}
 	}
 }

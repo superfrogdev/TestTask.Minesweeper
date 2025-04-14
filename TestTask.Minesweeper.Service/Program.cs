@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
@@ -5,11 +6,16 @@ using System.Text.Unicode;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 
+using FluentValidation;
+
 using Hellang.Middleware.ProblemDetails;
+
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Serilog;
 using Serilog.Events;
 
+using TestTask.Minesweeper.Application.Bootstrap;
 using TestTask.Minesweeper.Service.Swagger;
 
 namespace TestTask.Minesweeper.Service
@@ -66,145 +72,161 @@ namespace TestTask.Minesweeper.Service
 		private static WebApplicationBuilder CreateBuilder(string[] arguments)
 		{
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(arguments);
-
+			
 			BuildConfiguration(builder, arguments);
 
-			var jsonOptions = SetupJsonOptions(builder.Environment.IsDevelopment());
+			ConfigureServices(builder.Services, builder.Environment, builder.Configuration);
 
-			builder.Services.AddSingleton<JsonSerializerOptions>(jsonOptions);
-			
-			builder.Services.AddControllers()
-				.AddJsonOptions(configure =>
-				{
-					var destinationJsonOptions = configure.JsonSerializerOptions;
+			return builder;
+		}
 
-					destinationJsonOptions.AllowTrailingCommas = jsonOptions.AllowTrailingCommas;
-					destinationJsonOptions.DefaultBufferSize = jsonOptions.DefaultBufferSize;
-					destinationJsonOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
-					destinationJsonOptions.DictionaryKeyPolicy = jsonOptions.DictionaryKeyPolicy;
-					destinationJsonOptions.Encoder = jsonOptions.Encoder;
-					destinationJsonOptions.IgnoreReadOnlyFields = jsonOptions.IgnoreReadOnlyFields;
-					destinationJsonOptions.IgnoreReadOnlyProperties = jsonOptions.IgnoreReadOnlyProperties;
-					destinationJsonOptions.IncludeFields = jsonOptions.IncludeFields;
-					destinationJsonOptions.MaxDepth = jsonOptions.MaxDepth;
-					destinationJsonOptions.NumberHandling = jsonOptions.NumberHandling;
-					destinationJsonOptions.PreferredObjectCreationHandling = jsonOptions.PreferredObjectCreationHandling;
-					destinationJsonOptions.PropertyNameCaseInsensitive = jsonOptions.PropertyNameCaseInsensitive;
-					destinationJsonOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
-					destinationJsonOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
-					destinationJsonOptions.ReferenceHandler = jsonOptions.ReferenceHandler;					
+		private static void ConfigureServices(IServiceCollection services, IWebHostEnvironment environment, IConfiguration configuration)
+		{
+			var jsonOptions = SetupJsonOptions(environment.IsDevelopment());
 
-					destinationJsonOptions.UnknownTypeHandling = jsonOptions.UnknownTypeHandling;
-					destinationJsonOptions.UnmappedMemberHandling = jsonOptions.UnmappedMemberHandling;
-					destinationJsonOptions.WriteIndented = jsonOptions.WriteIndented;
-
-					foreach (var current in jsonOptions.Converters)
+			services.AddSingleton<JsonSerializerOptions>(jsonOptions)
+					.AddControllers()
+					.AddJsonOptions(configure =>
 					{
-						destinationJsonOptions.Converters.Add(current);
-					}
-				});
+						var destinationJsonOptions = configure.JsonSerializerOptions;
 
-			builder.Services
-				.AddApiVersioning(setupAction =>
-				{
-					setupAction.DefaultApiVersion = new ApiVersion(1, 0);
-					setupAction.AssumeDefaultVersionWhenUnspecified = true;
-					setupAction.ReportApiVersions = true;
-					setupAction.ApiVersionReader = new UrlSegmentApiVersionReader();
-				})
-				.AddApiExplorer(setupAction =>
-				{
-					setupAction.GroupNameFormat = "'v'VVV";
-					setupAction.SubstituteApiVersionInUrl = true;
-				});
+						destinationJsonOptions.AllowTrailingCommas = jsonOptions.AllowTrailingCommas;
+						destinationJsonOptions.DefaultBufferSize = jsonOptions.DefaultBufferSize;
+						destinationJsonOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
+						destinationJsonOptions.DictionaryKeyPolicy = jsonOptions.DictionaryKeyPolicy;
+						destinationJsonOptions.Encoder = jsonOptions.Encoder;
+						destinationJsonOptions.IgnoreReadOnlyFields = jsonOptions.IgnoreReadOnlyFields;
+						destinationJsonOptions.IgnoreReadOnlyProperties = jsonOptions.IgnoreReadOnlyProperties;
+						destinationJsonOptions.IncludeFields = jsonOptions.IncludeFields;
+						destinationJsonOptions.MaxDepth = jsonOptions.MaxDepth;
+						destinationJsonOptions.NumberHandling = jsonOptions.NumberHandling;
+						destinationJsonOptions.PreferredObjectCreationHandling = jsonOptions.PreferredObjectCreationHandling;
+						destinationJsonOptions.PropertyNameCaseInsensitive = jsonOptions.PropertyNameCaseInsensitive;
+						destinationJsonOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
+						destinationJsonOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
+						destinationJsonOptions.ReferenceHandler = jsonOptions.ReferenceHandler;
 
-			builder.Services
-				.AddSwaggerGen(setupAction =>
-				{
-					var fileNames = new string[] { typeof(Program).Assembly.GetName().Name + ".xml" };
+						destinationJsonOptions.UnknownTypeHandling = jsonOptions.UnknownTypeHandling;
+						destinationJsonOptions.UnmappedMemberHandling = jsonOptions.UnmappedMemberHandling;
+						destinationJsonOptions.WriteIndented = jsonOptions.WriteIndented;
 
-					foreach (var currentFileName in fileNames)
-					{
-						var xmlPath = Path.Combine(AppContext.BaseDirectory, currentFileName);
-
-						setupAction.IncludeXmlComments(xmlPath, true);
-
-						setupAction.SchemaFilter<EnumTypesSchemaFilter>(xmlPath);
-
-						setupAction.DocumentFilter<AddFieldTypeDocumentFilter>();
-					}
-
-					setupAction.CustomSchemaIds(type => type.FullName);
-
-					setupAction.MapType<DateTimeOffset>(() => new Microsoft.OpenApi.Models.OpenApiSchema()
-					{
-						Type = "string",
-						Format = "date-time",
-						Example = new Microsoft.OpenApi.Any.OpenApiDateTime(DateTimeOffset.UtcNow)
+						foreach (var current in jsonOptions.Converters)
+						{
+							destinationJsonOptions.Converters.Add(current);
+						}
 					});
 
-					setupAction.MapType<Api.FieldType[,]>(() =>
+			services
+					.AddApiVersioning(setupAction =>
 					{
-						var array = new Microsoft.OpenApi.Any.OpenApiArray();
+						setupAction.DefaultApiVersion = new ApiVersion(1, 0);
+						setupAction.AssumeDefaultVersionWhenUnspecified = true;
+						setupAction.ReportApiVersions = true;
+						setupAction.ApiVersionReader = new UrlSegmentApiVersionReader();
+					})
+					.AddApiExplorer(setupAction =>
+					{
+						setupAction.GroupNameFormat = "'v'VVV";
+						setupAction.SubstituteApiVersionInUrl = true;
+					});
 
-						var firstSubArray = new Microsoft.OpenApi.Any.OpenApiArray
+			services
+					.AddSwaggerGen(setupAction =>
+					{
+						var fileNames = new string[] { typeof(Program).Assembly.GetName().Name + ".xml" };
+
+						foreach (var currentFileName in fileNames)
 						{
-							new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.One.GetDisplayName()),
-							new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.Mine.GetDisplayName())
-						};
+							var xmlPath = Path.Combine(AppContext.BaseDirectory, currentFileName);
 
-						array.Add(firstSubArray);
+							setupAction.IncludeXmlComments(xmlPath, true);
 
-						var secondSubArray = new Microsoft.OpenApi.Any.OpenApiArray
+							setupAction.SchemaFilter<EnumTypesSchemaFilter>(xmlPath);
+
+							setupAction.DocumentFilter<AddFieldTypeDocumentFilter>();
+						}
+
+						setupAction.CustomSchemaIds(type => type.FullName);
+
+						setupAction.MapType<DateTimeOffset>(() => new Microsoft.OpenApi.Models.OpenApiSchema()
 						{
-							new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.One.GetDisplayName()),
-							new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.One.GetDisplayName())
-						};
+							Type = "string",
+							Format = "date-time",
+							Example = new Microsoft.OpenApi.Any.OpenApiDateTime(DateTimeOffset.UtcNow)
+						});
 
-						array.Add(secondSubArray);
-
-						var schema = new Microsoft.OpenApi.Models.OpenApiSchema()
+						setupAction.MapType<Api.FieldType[,]>(() =>
 						{
-							Type = "array",
-							Items = new Microsoft.OpenApi.Models.OpenApiSchema()
+							var array = new Microsoft.OpenApi.Any.OpenApiArray();
+
+							var firstSubArray = new Microsoft.OpenApi.Any.OpenApiArray
+							{
+								new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.One.GetDisplayName()),
+								new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.Mine.GetDisplayName())
+							};
+
+							array.Add(firstSubArray);
+
+							var secondSubArray = new Microsoft.OpenApi.Any.OpenApiArray
+							{
+								new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.One.GetDisplayName()),
+								new Microsoft.OpenApi.Any.OpenApiString(Api.FieldType.One.GetDisplayName())
+							};
+
+							array.Add(secondSubArray);
+
+							var schema = new Microsoft.OpenApi.Models.OpenApiSchema()
 							{
 								Type = "array",
 								Items = new Microsoft.OpenApi.Models.OpenApiSchema()
 								{
-									Type = "enum",
-									Reference = new Microsoft.OpenApi.Models.OpenApiReference() { Id = "TestTask.Minesweeper.Service.Api.FieldType", Type = Microsoft.OpenApi.Models.ReferenceType.Schema }
-								}
-							},
-							Example = array
-						};
+									Type = "array",
+									Items = new Microsoft.OpenApi.Models.OpenApiSchema()
+									{
+										Type = "enum",
+										Reference = new Microsoft.OpenApi.Models.OpenApiReference() { Id = "TestTask.Minesweeper.Service.Api.FieldType", Type = Microsoft.OpenApi.Models.ReferenceType.Schema }
+									}
+								},
+								Example = array
+							};
 
-						return schema;
+							return schema;
+						});
+					})
+					.AddHttpLogging(configureOptions =>
+					{
+						configureOptions.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All
+															| Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestQuery;
 					});
-				})
-				.AddHttpLogging(configureOptions =>
-				{
-					configureOptions.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All
-														| Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestQuery;
-				});
 
-			builder.Services.ConfigureOptions<SwaggerConfigurationOptions>();
+			services.ConfigureOptions<SwaggerConfigurationOptions>();
 
-			builder.Services.AddLogging()
-							.AddSerilog(configureLogger =>
-							{
-								configureLogger.ReadFrom.Configuration(builder.Configuration);
-							});
+			services.AddLogging()
+					.AddSerilog(configureLogger =>
+					{
+						configureLogger.ReadFrom.Configuration(configuration);
+					});
 
-			builder.Services.AddProblemDetails(options =>
+			services.AddProblemDetails(options =>
 			{
-				options.IncludeExceptionDetails = (context, exception) => builder.Environment.IsDevelopment();
+				options.IncludeExceptionDetails = (context, exception) => environment.IsDevelopment();
+
+				options.Ignore<Application.Exceptions.ValidationFaultException>();
+
+				options.Ignore<Application.Exceptions.ApplicationFaultBusinessException>();
 
 				options.MapToStatusCode<NotImplementedException>(StatusCodes.Status501NotImplemented);
 
 				options.MapToStatusCode<Exception>(StatusCodes.Status500InternalServerError);
 			});
 
-			return builder;
+			services.AddMediatR(configuration => configuration.RegisterServicesFromAssemblies(typeof(Program).Assembly, typeof(Application.Bootstrap.ServiceCollectionExtensions).Assembly));
+
+			AddFluentValidation(services, typeof(Application.Bootstrap.ServiceCollectionExtensions).Assembly);
+
+			services.AddAutoMapper(typeof(Program).Assembly, typeof(Application.Bootstrap.ServiceCollectionExtensions).Assembly);
+
+			services.AddMinesweeperApplication();
 		}
 
 		private static void BuildConfiguration(WebApplicationBuilder builder, string[] arguments)
@@ -214,6 +236,25 @@ namespace TestTask.Minesweeper.Service
 					.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
 					.AddEnvironmentVariables()
 					.AddCommandLine(arguments);
+		}
+
+		/// <summary>
+		/// Adds validators to <paramref name="services"/>, which are contained in specified <paramref name="assemblies"/>.
+		/// </summary>
+		/// <param name="services">Instance of <see cref="IServiceCollection"/>.</param>
+		/// <param name="assemblies">Assemblies.</param>
+		/// <returns>Instance of <see cref="IServiceCollection" />.</returns>
+		private static IServiceCollection AddFluentValidation(IServiceCollection services, params Assembly[] assemblies)
+		{
+			ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
+
+			AssemblyScanner.FindValidatorsInAssemblies(assemblies)
+				.ForEach(pair =>
+				{
+					services.TryAddEnumerable(ServiceDescriptor.Scoped(pair.InterfaceType, pair.ValidatorType));
+				});
+
+			return services;
 		}
 
 		private static JsonSerializerOptions SetupJsonOptions(bool isDevelopmentEnvironment)
@@ -259,7 +300,11 @@ namespace TestTask.Minesweeper.Service
 
 			application.UseHttpsRedirection();
 
+			application.UseMiddleware<Middlewares.ProcessableExceptionsMiddleware>();
+
 			application.UseProblemDetails();
+
+			application.UseMiddleware<Middlewares.CancellationSuppressionMiddleware>();
 
 			application.UseRouting();
 

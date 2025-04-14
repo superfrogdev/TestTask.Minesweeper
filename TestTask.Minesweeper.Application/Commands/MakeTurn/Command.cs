@@ -1,22 +1,20 @@
-using System.Text.Json.Serialization;
+using MediatR;
 
-namespace TestTask.Minesweeper.Service.Api
+namespace TestTask.Minesweeper.Application.Commands.MakeTurn
 {
 	/// <summary>
-	/// Represents a new turn.
+	/// Represents a command to make next turn in game.
 	/// </summary>
-	public sealed class NewTurn
+	public sealed class Command : IRequest<Result>
 	{
 		/// <summary>
 		/// Identifier of game.
 		/// </summary>
-		[JsonPropertyName("game_id")]
 		public required Guid GameId { get; init; }
 
 		/// <summary>
 		/// Index of column.
 		/// </summary>
-		[JsonPropertyName("col")]
 		public required ushort Column { get; init; }
 
 		/// <summary>
