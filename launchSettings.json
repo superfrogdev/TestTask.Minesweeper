@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "testtask.minesweeper.service",
+      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/swagger",
+      "serviceActions": {
+        "testtask.minesweeper.service": "StartDebugging",
+        "database": "StartWithoutDebugging",
+        "logs.storage": "StartWithoutDebugging"
+      }
+    }
+  }
+}
