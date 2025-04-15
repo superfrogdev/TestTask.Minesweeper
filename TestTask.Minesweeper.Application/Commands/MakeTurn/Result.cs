@@ -6,14 +6,9 @@ namespace TestTask.Minesweeper.Application.Commands.MakeTurn
 	public sealed class Result
 	{
 		/// <summary>
-		/// Width of game field.
+		/// Size of game field.
 		/// </summary>
-		public required ushort Width { get; init; }
-
-		/// <summary>
-		/// Height of game field.
-		/// </summary>
-		public required ushort Height { get; init; }
+		public required Domain.Values.Size2d FieldSize { get; init; }
 
 		/// <summary>
 		/// Count of mines.
@@ -21,13 +16,13 @@ namespace TestTask.Minesweeper.Application.Commands.MakeTurn
 		public required ushort MinesCount { get; init; }
 
 		/// <summary>
-		/// Indicates that game is completed.
+		/// Result after the turn was made.
 		/// </summary>
-		public required bool IsCompleted { get; init; }
+		public required Domain.Enums.TurnResult TurnResult{ get; init; }
 
 		/// <summary>
 		/// Game field.
 		/// </summary>
-		public required byte[,] Field { get; init; }
+		public required Domain.Values.Cell[,] Field { get; init; }
 	}
 }

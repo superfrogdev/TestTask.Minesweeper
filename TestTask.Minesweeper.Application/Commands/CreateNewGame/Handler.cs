@@ -10,16 +10,21 @@ namespace TestTask.Minesweeper.Application.Commands.CreateNewGame
 	internal sealed class Handler : IRequestHandler<Command, Result>
 	{
 		private readonly ILogger _logger;
+		private readonly Domain.Processors.IGameFieldCreator _gameFieldCreator;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="Handler"/>.
 		/// </summary>
 		/// <param name="logger">Instance of <see cref="ILogger{TCategoryName}"/> for this instance.</param>
+		/// <param name="gameFieldCreator">Instance of <see cref="Domain.Processors.IGameFieldCreator"/>.</param>
 		/// <exception cref="ArgumentNullException"><paramref name="logger"/> cannot be <see langword="null"/>.</exception>
-		public Handler(ILogger<Handler> logger)
+		/// <exception cref="ArgumentNullException"><paramref name="gameFieldCreator"/> cannot be <see langword="null"/>.</exception>
+		public Handler(ILogger<Handler> logger, Domain.Processors.IGameFieldCreator gameFieldCreator)
 			: base()
 		{
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+			_gameFieldCreator = gameFieldCreator ?? throw new ArgumentNullException(nameof(gameFieldCreator));
 		}
 
 		/// <inheritdoc/>
@@ -28,7 +33,7 @@ namespace TestTask.Minesweeper.Application.Commands.CreateNewGame
 			var result = new Result()
 			{
 				GameId = Guid.NewGuid(),
-				Field = new byte[request.Height, request.Width]
+				Field = _gameFieldCreator.Create(request.FieldSize, request.MinesCount)
 			};
 
 			return Task.FromResult(result);

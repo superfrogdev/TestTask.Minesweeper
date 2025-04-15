@@ -8,14 +8,9 @@ namespace TestTask.Minesweeper.Application.Commands.CreateNewGame
 	public sealed class Command : IRequest<Result>
 	{
 		/// <summary>
-		/// Width of game field.
+		/// Size of game field.
 		/// </summary>
-		public required ushort Width { get; init; }
-
-		/// <summary>
-		/// Height of game field.
-		/// </summary>
-		public required ushort Height { get; init; }
+		public required Domain.Values.Size2d FieldSize { get; init; }
 
 		/// <summary>
 		/// Count of mines.

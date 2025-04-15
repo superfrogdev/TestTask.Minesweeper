@@ -7,26 +7,20 @@ namespace TestTask.Minesweeper.Application.Commands.CreateNewGame
 	/// </summary>
 	public sealed class CommandValidator : AbstractValidator<Command>
 	{
+		private static readonly Domain.Values.Size2d _maxPossibleFieldSize = new(30);
+
 		/// <summary>
 		/// Initializes a new instance of <see cref="CommandValidator"/>.
 		/// </summary>
 		public CommandValidator()
 			: base()
 		{
-			RuleFor(expression => expression.Width)
-				.LessThanOrEqualTo<Command, ushort>(30)
-				.WithMessage("Must be equal or less than 30.")
-				.GreaterThan<Command, ushort>(0)
-				.WithMessage("Must be greater than 0.");
-
-			RuleFor(expression => expression.Height)
-				.LessThanOrEqualTo<Command, ushort>(30)
-				.WithMessage("Must be equal or less than 30.")
-				.GreaterThan<Command, ushort>(0)
-				.WithMessage("Must be greater than 0.");
+			RuleFor(expression => expression.FieldSize)
+				.Must(fieldSize => fieldSize.Width <= _maxPossibleFieldSize.Width && fieldSize.Height <= _maxPossibleFieldSize.Height)
+				.WithMessage(@$"Must be equal or less than ""{_maxPossibleFieldSize}"".");
 
 			RuleFor(expression => expression.MinesCount)
-				.Must((command, minesCount) => minesCount < command.Width * command.Height)
+				.Must((command, minesCount) => minesCount < command.FieldSize.CalculateArea())
 				.WithMessage("Must be less than game field area.");
 		}
 	}

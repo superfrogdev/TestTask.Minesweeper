@@ -17,11 +17,11 @@ namespace TestTask.Minesweeper.Service.Api
 		/// Index of column.
 		/// </summary>
 		[JsonPropertyName("col")]
-		public required ushort Column { get; init; }
+		public required short Column { get; init; }
 
 		/// <summary>
 		/// Index of row.
 		/// </summary>
-		public required ushort Row { get; init; }
+		public required short Row { get; init; }
 	}
 }

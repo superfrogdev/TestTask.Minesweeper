@@ -7,19 +7,17 @@ namespace TestTask.Minesweeper.Application.Commands.MakeTurn
 	/// </summary>
 	public sealed class CommandValidator : AbstractValidator<Command>
 	{
+		private static readonly Domain.Values.Rectangle _maxPossibleFieldRectangle = new(Domain.Values.Point2d.Zero, new Domain.Values.Size2d(30));
+
 		/// <summary>
 		/// Initializes a new instance of <see cref="CommandValidator"/>.
 		/// </summary>
 		public CommandValidator()
 			: base()
 		{
-			RuleFor(expression => expression.Column)
-				.LessThan<Command, ushort>(30)
-				.WithMessage("Must be less than 30.");
-
-			RuleFor(expression => expression.Row)
-				.LessThan<Command, ushort>(30)
-				.WithMessage("Must be less than 30.");
+			RuleFor(expression => expression.SelectedCellCoordinates)
+				.Must(_maxPossibleFieldRectangle.Contains)
+				.WithMessage($@"Must be in rectangle: ""{_maxPossibleFieldRectangle}"".");
 		}
 	}
 }

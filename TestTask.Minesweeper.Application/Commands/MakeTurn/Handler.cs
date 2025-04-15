@@ -27,11 +27,10 @@ namespace TestTask.Minesweeper.Application.Commands.MakeTurn
 		{
 			var result = new Result()
 			{
-				Field = new byte[1, 1],
-				Height = 1,
-				IsCompleted = false,
-				MinesCount = 0,
-				Width = 1
+				Field = new Domain.Values.Cell[1, 1],
+				FieldSize = new Domain.Values.Size2d(1),
+				TurnResult = Domain.Enums.TurnResult.Defeat,
+				MinesCount = 0
 			};
 
 			return Task.FromResult(result);

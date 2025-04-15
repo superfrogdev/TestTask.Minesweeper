@@ -13,13 +13,8 @@ namespace TestTask.Minesweeper.Application.Commands.MakeTurn
 		public required Guid GameId { get; init; }
 
 		/// <summary>
-		/// Index of column.
+		/// Coordinates of selected cell.
 		/// </summary>
-		public required ushort Column { get; init; }
-
-		/// <summary>
-		/// Index of row.
-		/// </summary>
-		public required ushort Row { get; init; }
+		public required Domain.Values.Point2d SelectedCellCoordinates { get; init; }
 	}
 }

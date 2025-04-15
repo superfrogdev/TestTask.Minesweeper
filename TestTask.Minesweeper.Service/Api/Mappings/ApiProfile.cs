@@ -13,32 +13,84 @@ namespace TestTask.Minesweeper.Service.Api.Mappings
 		public ApiProfile()
 			: base()
 		{
-			CreateMap<NewGameParameters, Application.Commands.CreateNewGame.Command>();
+			CreateMap<NewGameParameters, Application.Commands.CreateNewGame.Command>()
+				.ForMember(destinationMember => destinationMember.FieldSize
+							, memberOptions => memberOptions.MapFrom(sourceMember => new Domain.Values.Size2d(sourceMember.Width, sourceMember.Height)));
 
 			CreateMap<(Application.Commands.CreateNewGame.Result Result, NewGameParameters NewGameParameters), GameState>()
 				.ForMember(destinationMember => destinationMember.GameId, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.GameId))
+				.ForMember(destinationMember => destinationMember.IsCompleted, memberOptions => memberOptions.MapFrom(sourceMember => false))
 				.ForMember(destinationMember => destinationMember.Width, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.NewGameParameters.Width))
 				.ForMember(destinationMember => destinationMember.Height, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.NewGameParameters.Height))
 				.ForMember(destinationMember => destinationMember.MinesCount, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.NewGameParameters.MinesCount))
-				.ForMember(destinationMember => destinationMember.Field, memberOptions => memberOptions.MapFrom(sourceMember => ConvertFrom(sourceMember.Result.Field)));
+				.ForMember(destinationMember => destinationMember.Field, memberOptions => memberOptions.MapFrom(sourceMember => ConvertFrom(sourceMember.Result.Field, default)));
 
-			CreateMap<NewTurn, Application.Commands.MakeTurn.Command>();
+			CreateMap<NewTurn, Application.Commands.MakeTurn.Command>()
+				.ForMember(destinationMember => destinationMember.SelectedCellCoordinates
+							, memberOptions => memberOptions.MapFrom(sourceMember => new Domain.Values.Point2d(sourceMember.Column, sourceMember.Row)));
 
 			CreateMap<(Application.Commands.MakeTurn.Result Result, NewTurn NewTurn), GameState>()
 				.ForMember(destinationMember => destinationMember.GameId, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.NewTurn.GameId))
-				.ForMember(destinationMember => destinationMember.Width, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.Width))
-				.ForMember(destinationMember => destinationMember.Height, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.Height))
+				.ForMember(destinationMember => destinationMember.IsCompleted, memberOptions => memberOptions.MapFrom(sourceMember => IsCompleted(sourceMember.Result.TurnResult)))
+				.ForMember(destinationMember => destinationMember.Width, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.FieldSize.Width))
+				.ForMember(destinationMember => destinationMember.Height, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.FieldSize.Height))
 				.ForMember(destinationMember => destinationMember.MinesCount, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.MinesCount))
-				.ForMember(destinationMember => destinationMember.Field, memberOptions => memberOptions.MapFrom(sourceMember => ConvertFrom(sourceMember.Result.Field)));
+				.ForMember(destinationMember => destinationMember.Field
+							, memberOptions => memberOptions.MapFrom(sourceMember => ConvertFrom(sourceMember.Result.Field, sourceMember.Result.TurnResult)));
 		}
 
-		private static FieldType[,] ConvertFrom(byte[,] field)
+		private static FieldType[,] ConvertFrom(Domain.Values.Cell[,] field, Domain.Enums.TurnResult? turnResult)
 		{
 			var fieldTypes = new FieldType[field.GetLength(0), field.GetLength(1)];
 
-			Buffer.BlockCopy(field, 0, fieldTypes, 0, field.Length);
+			if (turnResult.HasValue && IsCompleted(turnResult.Value))
+			{
+				var forMineCase = turnResult.Value == Domain.Enums.TurnResult.Defeat ? FieldType.MineExploded : FieldType.Mine;
+
+				for (var i = 0; i < fieldTypes.GetLength(0); i++)
+				{
+					for (var j = 0; j < fieldTypes.GetLength(1); j++)
+					{
+						var cell = field[i, j];
+
+						if (cell.Value != Domain.Enums.CellValue.Mine)
+						{
+							fieldTypes[i, j] = (FieldType)(byte)cell.Value;
+						}
+						else
+						{
+							fieldTypes[i, j] = forMineCase;
+						}
+					}
+				}
+			}
+			else
+			{
+				for (var i = 0; i < fieldTypes.GetLength(0); i++)
+				{
+					for (var j = 0; j < fieldTypes.GetLength(1); j++)
+					{
+						var cell = field[i, j];
+
+						if (cell.IsOpened)
+						{
+							fieldTypes[i, j] = (FieldType)(byte)cell.Value;
+						}
+						else
+						{
+							fieldTypes[i, j] = FieldType.Empty;
+						}
+					}
+				}
+			}
 
 			return fieldTypes;
+		}
+
+		private static bool IsCompleted(Domain.Enums.TurnResult turnResult)
+		{
+			return turnResult == Domain.Enums.TurnResult.Defeat
+					|| turnResult == Domain.Enums.TurnResult.Victory;
 		}
 	}
 }

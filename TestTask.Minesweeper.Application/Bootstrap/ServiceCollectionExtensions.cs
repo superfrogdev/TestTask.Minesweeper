@@ -19,6 +19,9 @@ namespace TestTask.Minesweeper.Application.Bootstrap
 		{
 			ArgumentNullException.ThrowIfNull(services, nameof(services));
 
+			services.AddTransient<Random>()
+					.AddTransient<Domain.Processors.IGameFieldCreator, Domain.Processors.Implementation.GameFieldCreatorByRandom>();
+
 			services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Infrastructure.Pipelines.RequestLoggingBehavior<,>))
 					.AddTransient(typeof(IPipelineBehavior<,>), typeof(Infrastructure.Pipelines.ApplicationFaultExceptionProcessorBehavior<,>))
 					.AddTransient(typeof(IPipelineBehavior<,>), typeof(Infrastructure.Pipelines.RequestValidationBehavior<,>));
