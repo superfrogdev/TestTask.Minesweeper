@@ -6,7 +6,7 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 	/// <summary>
 	/// Represents an implementation of <see cref="ITurnProcessor"/>.
 	/// </summary>
-	internal sealed class TurnProcessor : ITurnProcessor
+	public sealed class TurnProcessor : ITurnProcessor
 	{
 		private readonly ITurnSolver _turnSolver;
 
@@ -22,7 +22,7 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 		}
 
 		/// <inheritdoc/>
-		public (Enums.TurnResult LastTurnResult, ushort lastTurnProcessedCellCount, GameField GameFieldAfterAll) Process(IOrderedEnumerable<Turn> turns, Snapshot lastSnapshot)
+		public (Enums.TurnResult LastTurnResult, ushort lastTurnProcessedCellCount, GameField GameFieldAfterAll) Process(IEnumerable<Turn> turns, Snapshot lastSnapshot)
 		{
 			ArgumentNullException.ThrowIfNull(turns, nameof(turns));
 

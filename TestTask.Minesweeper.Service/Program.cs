@@ -16,6 +16,7 @@ using Serilog;
 using Serilog.Events;
 
 using TestTask.Minesweeper.Application.Bootstrap;
+using TestTask.Minesweeper.Persistence;
 using TestTask.Minesweeper.Service.Swagger;
 
 namespace TestTask.Minesweeper.Service
@@ -29,7 +30,7 @@ namespace TestTask.Minesweeper.Service
 		/// Does start of service execution.
 		/// </summary>
 		/// <param name="args">Command-line arguments.</param>
-		public static int Main(string[] args)
+		public static async Task<int> Main(string[] args)
 		{
 			Log.Logger = new LoggerConfiguration()
 								.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -44,13 +45,19 @@ namespace TestTask.Minesweeper.Service
 
 				WebApplicationBuilder builder = CreateBuilder(args);
 
-				var application = InitializeApplication(builder);
+				var application = await InitializeApplicationAsync(builder);
 
-				application.Run();
+				await application.RunAsync(CancellationToken.None);
 
 				Log.Information("Execution of service was ended.");
 
 				return 0;
+			}
+			catch (HostAbortedException)
+			{
+				Log.Information("Execution of host was aborted.");
+
+				throw;
 			}
 			catch (Exception exception)
 			{
@@ -226,7 +233,7 @@ namespace TestTask.Minesweeper.Service
 
 			services.AddAutoMapper(typeof(Program).Assembly, typeof(Application.Bootstrap.ServiceCollectionExtensions).Assembly);
 
-			services.AddMinesweeperApplication();
+			services.AddMinesweeperApplication(configuration);
 		}
 
 		private static void BuildConfiguration(WebApplicationBuilder builder, string[] arguments)
@@ -274,9 +281,13 @@ namespace TestTask.Minesweeper.Service
 			return options;
 		}
 
-		private static WebApplication InitializeApplication(WebApplicationBuilder builder)
+		private static async Task<WebApplication> InitializeApplicationAsync(WebApplicationBuilder builder)
 		{
 			WebApplication application = builder.Build();
+
+			await application.Services.ApplyDatabaseMigrationsAsync<Persistence.GameDbContext>();
+
+			application.UseCors(configurePolicy => configurePolicy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
 			application.UseHttpLogging();
 

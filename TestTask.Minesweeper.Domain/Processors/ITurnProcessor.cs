@@ -15,6 +15,6 @@ namespace TestTask.Minesweeper.Domain.Processors
 		/// <exception cref="ArgumentException"><paramref name="turns"/> must has at least one element.</exception>
 		/// <returns>Result of processing <paramref name="turns"/>.</returns>
 		(Enums.TurnResult LastTurnResult, ushort lastTurnProcessedCellCount, Values.GameField GameFieldAfterAll)
-			Process(IOrderedEnumerable<Entities.Turn> turns, Entities.Snapshot lastSnapshot);
+			Process(IEnumerable<Entities.Turn> turns, Entities.Snapshot lastSnapshot);
 	}
 }

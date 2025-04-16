@@ -78,7 +78,7 @@ namespace TestTask.Minesweeper.Service.Api.Mappings
 						}
 						else
 						{
-							fieldTypes[i, j] = FieldType.Empty;
+							fieldTypes[i, j] = FieldType.Hidden;
 						}
 					}
 				}

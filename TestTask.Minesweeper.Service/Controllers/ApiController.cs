@@ -13,7 +13,7 @@ namespace TestTask.Minesweeper.Service.Controllers
 	/// Represents a minesweeper api.
 	/// </summary>
 	[ApiController]
-	[Route("api")]
+	[Route("")]
 	public sealed class ApiController : ControllerBase
 	{
 		private readonly ILogger<ApiController> _logger;

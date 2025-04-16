@@ -8,9 +8,9 @@ namespace TestTask.Minesweeper.Service.Api
 	public enum FieldType
 	{
 		/// <summary>
-		/// Empty or unknown field.
+		/// Empty.
 		/// </summary>
-		[Display(Name = " ")]
+		[Display(Name = "0")]
 		Empty,
 
 		/// <summary>
@@ -71,6 +71,12 @@ namespace TestTask.Minesweeper.Service.Api
 		/// Field with exploded mine.
 		/// </summary>
 		[Display(Name = "X")]
-		MineExploded
+		MineExploded,
+
+		/// <summary>
+		/// Hidden field.
+		/// </summary>
+		[Display(Name = " ")]
+		Hidden
 	}
 }

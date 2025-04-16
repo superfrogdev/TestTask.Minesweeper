@@ -17,7 +17,9 @@ namespace TestTask.Minesweeper.Application.Commands.CreateNewGame
 		{
 			RuleFor(expression => expression.FieldSize)
 				.Must(fieldSize => fieldSize.Width <= _maxPossibleFieldSize.Width && fieldSize.Height <= _maxPossibleFieldSize.Height)
-				.WithMessage(@$"Must be equal or less than ""{_maxPossibleFieldSize}"".");
+				.WithMessage(@$"Must be equal or less than ""{_maxPossibleFieldSize}"".")
+				.Must(fieldSize => fieldSize.CalculateArea() > 0)
+				.WithMessage(@$"Area must be greater than zero.");
 
 			RuleFor(expression => expression.MinesCount)
 				.Must((command, minesCount) => minesCount < command.FieldSize.CalculateArea())

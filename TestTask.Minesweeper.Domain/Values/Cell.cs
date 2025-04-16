@@ -23,6 +23,11 @@ namespace TestTask.Minesweeper.Domain.Values
 			IsOpened = isOpened;
 		}
 
+		private Cell(byte value)
+		{
+			_value = value;
+		}
+
 		/// <summary>
 		/// Indicates that this instance is opened by player.
 		/// </summary>
@@ -111,6 +116,24 @@ namespace TestTask.Minesweeper.Domain.Values
 		public static bool operator !=(Cell left, Cell right)
 		{
 			return !(left == right);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="Cell"/> from <paramref name="value"/>.
+		/// </summary>
+		/// <param name="value">Raw value.</param>
+		public static explicit operator Cell(byte value)
+		{
+			return new Cell(value);
+		}
+
+		/// <summary>
+		/// Gets raw value of <paramref name="cell"/>.
+		/// </summary>
+		/// <param name="cell">Instance of <see cref="Cell"/>.</param>
+		public static explicit operator byte(Cell cell)
+		{
+			return cell._value;
 		}
 	}
 }
