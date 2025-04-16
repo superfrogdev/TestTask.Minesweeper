@@ -20,7 +20,9 @@ namespace TestTask.Minesweeper.Application.Bootstrap
 			ArgumentNullException.ThrowIfNull(services, nameof(services));
 
 			services.AddTransient<Random>()
-					.AddTransient<Domain.Processors.IGameFieldCreator, Domain.Processors.Implementation.GameFieldCreatorByRandom>();
+					.AddTransient<Domain.Processors.IGameFieldGenerator, Domain.Processors.Implementation.GameFieldGeneratorByRandom>()
+					.AddSingleton<Domain.Processors.IOpenAllLinkedCellsProcessor, Domain.Processors.Implementation.OpenAllLinkedCellsProcessorThroughBreadthFirstSearch>()
+					.AddSingleton<Domain.Processors.ITurnSolver, Domain.Processors.Implementation.TurnSolver>();
 
 			services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Infrastructure.Pipelines.RequestLoggingBehavior<,>))
 					.AddTransient(typeof(IPipelineBehavior<,>), typeof(Infrastructure.Pipelines.ApplicationFaultExceptionProcessorBehavior<,>))

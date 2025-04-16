@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using System.Text.Json;
 
 namespace TestTask.Minesweeper.Service.Middlewares
@@ -39,9 +40,47 @@ namespace TestTask.Minesweeper.Service.Middlewares
 			{
 				httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-				var errorDescription = new Api.ErrorDescription() { Error = exception.Message };
+				var errorDescription = new Api.ErrorDescription() { Error = GenerateErrorMessage(exception) };
 
 				await httpContext.Response.WriteAsJsonAsync<Api.ErrorDescription>(errorDescription, _jsonSerializerOptions, "application/json", httpContext.RequestAborted);
+			}
+		}
+
+		private static string GenerateErrorMessage(Exception exception)
+		{
+			var resultStringBuilder = new StringBuilder(CalculateCapacity(exception) + CalculateCapacity(exception.InnerException));
+
+			Append(exception, resultStringBuilder);
+
+			if (exception.InnerException != null)
+			{
+				Append(exception.InnerException, resultStringBuilder);
+			}
+
+			return resultStringBuilder.ToString();
+
+			static StringBuilder Append(Exception exception, StringBuilder stringBuilder)
+			{
+				stringBuilder.Append(exception.Message)
+								.Append(':');
+
+				foreach (var current in exception.Data.Values)
+				{
+					stringBuilder.Append(current)
+										.Append(';');
+				}
+
+				return stringBuilder;
+			}
+
+			static int CalculateCapacity(Exception? exception)
+			{
+				if (exception != null)
+				{
+					return exception.Message.Length + exception.Data.Count * 50;
+				}
+
+				return 0;
 			}
 		}
 	}

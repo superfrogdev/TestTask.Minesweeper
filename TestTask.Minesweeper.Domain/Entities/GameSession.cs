@@ -3,7 +3,7 @@ namespace TestTask.Minesweeper.Domain.Entities
 	/// <summary>
 	/// Represents a game session.
 	/// </summary>
-	public sealed class GameSession
+	public class GameSession
 	{
 		/// <summary>
 		/// Identifier of this instance.
@@ -23,9 +23,9 @@ namespace TestTask.Minesweeper.Domain.Entities
 		public required ushort MinesCount { get; init; }
 
 		/// <summary>
-		/// Indicates if this instance is completed.
+		/// <see cref="Enums.GameSessionStatus"/> of this instance.
 		/// </summary>
-		public required bool IsCompleted { get; set; }
+		public required Enums.GameSessionStatus Status { get; set; }
 
 		/// <summary>
 		/// Represents a collection of <see cref="Turn"/>, which were made during this instance.

@@ -8,11 +8,11 @@ namespace TestTask.Minesweeper.Domain.Processors
 		/// <summary>
 		/// Opens all cells, which are linked to cell with specified coordinates <paramref name="startPoint"/>.
 		/// </summary>
-		/// <param name="cells">Field of cells.</param>
+		/// <param name="gameField">Instance of <see cref="Values.GameField"/>.</param>
 		/// <param name="startPoint">Coordinates of starting cell.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="cells"/> cannot be <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentOutOfRangeException"><paramref name="startPoint"/> is out of range <paramref name="cells"/>.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="gameField"/> cannot be <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="startPoint"/> is out of range <paramref name="gameField"/>.</exception>
 		/// <returns>Number of opened cells.</returns>
-		ushort Open(Values.Cell[,] cells, Values.Point2d startPoint);
+		ushort Open(Values.GameField gameField, Values.Point2d startPoint);
 	}
 }

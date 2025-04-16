@@ -3,23 +3,12 @@ namespace TestTask.Minesweeper.Domain.Entities
 	/// <summary>
 	/// Represents a snapshot of <see cref="Entities.GameSession"/>.
 	/// </summary>
-	public sealed class Snapshot
+	public class Snapshot
 	{
-		/// <summary>
-		/// Identifier of <see cref="GameSession"/>
-		/// </summary>
-		public required Guid GameSessionId { get; init; }
-
 		/// <summary>
 		/// Instance of <see cref="Entities.GameSession"/>.
 		/// </summary>
-		public GameSession GameSession { get; set; } = default!;
-
-		/// <summary>
-		/// Number of <see cref="Turn"/>.
-		/// </summary>
-		/// <remarks>If <see langword="null"/>, that means no one turn is made.</remarks>
-		public required ushort? TurnNumber { get; init; }
+		public required GameSession GameSession { get; set; } = default!;
 
 		/// <summary>
 		/// Instance of <see cref="Entities.Turn"/>.
@@ -27,8 +16,8 @@ namespace TestTask.Minesweeper.Domain.Entities
 		public Turn? Turn { get; set; } = default;
 
 		/// <summary>
-		/// Field of <see cref="Values.Cell"/>.
+		/// Instance of <see cref="Values.GameField"/>.
 		/// </summary>
-		public required Values.Cell[,] Cells { get; init; }
+		public required Values.GameField Field { get; init; }
 	}
 }

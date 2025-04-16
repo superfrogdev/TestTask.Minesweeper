@@ -1,5 +1,3 @@
-using TestTask.Minesweeper.Domain.Entities;
-
 namespace TestTask.Minesweeper.Domain.Processors.Implementation
 {
 	/// <summary>
@@ -8,12 +6,8 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 	public sealed class SnapshotSaveDecisionMakerWithSaveMemoryStrategy : ISnapshotSaveDecisionMaker
 	{
 		/// <inheritdoc/>
-		public bool IsNeedToBeSaved(Snapshot previous, Snapshot actual, Enums.TurnResult resultOfProcess)
+		public bool IsNeedToBeSaved(Enums.TurnResult resultOfProcess, ushort countOfProcessedCells)
 		{
-			ArgumentNullException.ThrowIfNull(previous, nameof(previous));
-
-			ArgumentNullException.ThrowIfNull(actual, nameof(actual));
-
 			return resultOfProcess == Enums.TurnResult.Defeat
 					|| resultOfProcess == Enums.TurnResult.Victory;
 		}

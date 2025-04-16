@@ -85,7 +85,7 @@ namespace TestTask.Minesweeper.Domain.Values
 		/// Gets string representation of this instance.
 		/// </summary>
 		/// <returns><see cref="string"/> with data(<see cref="Cell.Value"/>, <see cref="Cell.IsOpened"/>) of this instance. 
-		/// Example - ""Value" = "Empty"; "Height" = "false".".</returns>
+		/// Example - ""Value" = "Empty"; "IsOpened" = "false".".</returns>
 		public override string ToString()
 		{
 			return @$"""{nameof(Value)}"": ""{Value}""; ""{nameof(IsOpened)}"": ""{IsOpened}"".";

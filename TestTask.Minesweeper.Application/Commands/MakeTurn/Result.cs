@@ -6,23 +6,18 @@ namespace TestTask.Minesweeper.Application.Commands.MakeTurn
 	public sealed class Result
 	{
 		/// <summary>
-		/// Size of game field.
-		/// </summary>
-		public required Domain.Values.Size2d FieldSize { get; init; }
-
-		/// <summary>
 		/// Count of mines.
 		/// </summary>
 		public required ushort MinesCount { get; init; }
 
 		/// <summary>
-		/// Result after the turn was made.
+		/// Instance of <see cref="Domain.Enums.GameSessionStatus"/>.
 		/// </summary>
-		public required Domain.Enums.TurnResult TurnResult{ get; init; }
+		public required Domain.Enums.GameSessionStatus GameSessionStatus{ get; init; }
 
 		/// <summary>
-		/// Game field.
+		/// Instance of <see cref="Domain.Values.GameField"/>.
 		/// </summary>
-		public required Domain.Values.Cell[,] Field { get; init; }
+		public required Domain.Values.GameField Field { get; init; }
 	}
 }

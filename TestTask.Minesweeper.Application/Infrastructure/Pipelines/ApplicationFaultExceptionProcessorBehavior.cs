@@ -39,6 +39,10 @@ namespace TestTask.Minesweeper.Application.Infrastructure.Pipelines
 			{
 				throw;
 			}
+			catch (Domain.Exceptions.DomainException domainException)
+			{
+				throw new ApplicationFaultDomainException(domainException);
+			}
 			catch (ApplicationFaultException)
 			{
 				throw;

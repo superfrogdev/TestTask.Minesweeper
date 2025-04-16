@@ -13,6 +13,6 @@ namespace TestTask.Minesweeper.Application.Commands.CreateNewGame
 		/// <summary>
 		/// Game field.
 		/// </summary>
-		public required Domain.Values.Cell[,] Field { get; init; }
+		public required Domain.Values.GameField Field { get; init; }
 	}
 }

@@ -20,35 +20,24 @@ namespace TestTask.Minesweeper.Domain.Tests.Processors.Implementation
 		}
 
 		/// <summary>
-		/// Tests <see cref="OpenAllLinkedCellsProcessorThroughBreadthFirstSearch.Open(Values.Cell[,], Values.Point2d)"/>.
+		/// Tests <see cref="OpenAllLinkedCellsProcessorThroughBreadthFirstSearch.Open(Domain.Values.GameField, Domain.Values.Point2d)"/>.
 		/// </summary>
 		[Fact]
-		public void Open_NullCells_ThrowException()
+		public void Open_NullGameField_ThrowException()
 		{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-			Assert.Throws<ArgumentNullException>("cells", () => _instance.Open(null, Domain.Values.Point2d.Zero));
+			Assert.Throws<ArgumentNullException>("gameField", () => _instance.Open(null, Domain.Values.Point2d.Zero));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 
 		/// <summary>
-		/// Tests <see cref="OpenAllLinkedCellsProcessorThroughBreadthFirstSearch.Open(Values.Cell[,], Values.Point2d)"/>.
-		/// </summary>
-		[Fact]
-		public void Open_ZeroFieldSize_ThrowException()
-		{
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-			Assert.Throws<ArgumentOutOfRangeException>("cells", () => _instance.Open(new Domain.Values.Cell[1, 0], Domain.Values.Point2d.Zero));
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-		}
-
-		/// <summary>
-		/// Tests <see cref="OpenAllLinkedCellsProcessorThroughBreadthFirstSearch.Open(Values.Cell[,], Values.Point2d)"/>.
+		/// Tests <see cref="OpenAllLinkedCellsProcessorThroughBreadthFirstSearch.Open(Domain.Values.GameField, Domain.Values.Point2d)"/>.
 		/// </summary>
 		[Fact]
 		public void Open_StartPointOutOfRange_ThrowException()
 		{
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-			Assert.Throws<ArgumentOutOfRangeException>("startPoint", () => _instance.Open(new Domain.Values.Cell[10, 10], new Domain.Values.Point2d(-1, 5)));
+			Assert.Throws<ArgumentOutOfRangeException>("startPoint", () => _instance.Open(new Domain.Values.GameField(new Domain.Values.Size2d(10)), new Domain.Values.Point2d(-1, 5)));
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 		}
 	}

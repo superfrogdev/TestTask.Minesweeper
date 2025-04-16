@@ -1,4 +1,5 @@
 using TestTask.Minesweeper.Domain.Entities;
+using TestTask.Minesweeper.Domain.Values;
 
 namespace TestTask.Minesweeper.Domain.Processors.Implementation
 {
@@ -7,45 +8,48 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 	/// </summary>
 	internal sealed class TurnProcessor : ITurnProcessor
 	{
-		private readonly ISnapshotProcessor _snapshotProcessor;
+		private readonly ITurnSolver _turnSolver;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="TurnProcessor"/>.
 		/// </summary>
-		/// <param name="snapshotProcessor">Instance of <see cref="ISnapshotProcessor"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="snapshotProcessor"/> cannot be <see langword="null"/>.</exception>
-		public TurnProcessor(ISnapshotProcessor snapshotProcessor)
+		/// <param name="turnSolver">Instance of <see cref="ITurnSolver"/>.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="turnSolver"/> cannot be <see langword="null"/>.</exception>
+		public TurnProcessor(ITurnSolver turnSolver)
 			: base()
 		{
-			_snapshotProcessor = snapshotProcessor ?? throw new ArgumentNullException(nameof(snapshotProcessor));
+			_turnSolver = turnSolver ?? throw new ArgumentNullException(nameof(turnSolver));
 		}
 
 		/// <inheritdoc/>
-		public Enums.TurnResult Process(IOrderedEnumerable<Turn> turns, Snapshot lastSnapshot, out Snapshot newSnapshot)
+		public (Enums.TurnResult LastTurnResult, ushort lastTurnProcessedCellCount, GameField GameFieldAfterAll) Process(IOrderedEnumerable<Turn> turns, Snapshot lastSnapshot)
 		{
 			ArgumentNullException.ThrowIfNull(turns, nameof(turns));
 
 			ArgumentNullException.ThrowIfNull(lastSnapshot, nameof(lastSnapshot));
 
-			Enums.TurnResult resultOfProcess;
-
 			using (var turnsEnumerator = turns.GetEnumerator())
 			{
 				if (!turnsEnumerator.MoveNext())
 				{
-					throw new Exception("No turns!");
+					throw new ArgumentException("Must contains at least one element.", nameof(turns));
 				}
+
+				var gameField = new GameField(lastSnapshot.Field);
+
+				Enums.TurnResult lastTurnResult;
+				ushort lastTurnProcessedCellCount;
 
 				do
 				{
 					var currentTurn = turnsEnumerator.Current;
 
-					newSnapshot = _snapshotProcessor.Process(lastSnapshot, currentTurn, out resultOfProcess);
+					lastTurnResult = _turnSolver.Solve(currentTurn, gameField, out lastTurnProcessedCellCount);
 				}
 				while (turnsEnumerator.MoveNext());
-			}
 
-			return resultOfProcess;
+				return (lastTurnResult, lastTurnProcessedCellCount, gameField);
+			}
 		}
 	}
 }

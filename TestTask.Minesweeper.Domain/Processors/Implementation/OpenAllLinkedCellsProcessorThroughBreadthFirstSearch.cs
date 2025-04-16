@@ -20,18 +20,11 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 		];
 
 		/// <inheritdoc/>
-		public ushort Open(Cell[,] cells, Point2d startPoint)
+		public ushort Open(GameField gameField, Point2d startPoint)
 		{
-			ArgumentNullException.ThrowIfNull(cells, nameof(cells));
+			ArgumentNullException.ThrowIfNull(gameField, nameof(gameField));
 
-			var fieldSize = new Size2d((ushort)cells.GetLength(1), (ushort)cells.GetLength(0));
-
-			if (fieldSize.CalculateArea() < 1)
-			{
-				throw new ArgumentOutOfRangeException(nameof(cells), "Area must be greater than zero.");
-			}
-
-			var fieldBoundRectangle = new Rectangle(Point2d.Zero, fieldSize);
+			var fieldBoundRectangle = new Rectangle(Point2d.Zero, gameField.Size);
 
 			if (!fieldBoundRectangle.Contains(startPoint))
 			{
@@ -40,11 +33,11 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 
 			ushort openedCellCount = 1;
 
-			ref var startCell = ref cells[startPoint.Y, startPoint.X];
+			ref var startCell = ref gameField[startPoint];
 
 			startCell.IsOpened = true;
 
-			var cellCoordinatesToOpen = new Queue<Point2d>((int)(fieldSize.CalculateArea() >> 2));
+			var cellCoordinatesToOpen = new Queue<Point2d>((int)(gameField.Size.CalculateArea() >> 2));
 
 			cellCoordinatesToOpen.Enqueue(startPoint);
 
@@ -52,11 +45,11 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 			{
 				var currentCellCoordinates = cellCoordinatesToOpen.Dequeue();
 
-				var currenCell = cells[currentCellCoordinates.Y, currentCellCoordinates.X];
+				var currenCell = gameField[currentCellCoordinates];
 
 				if (currenCell.Value == Enums.CellValue.Empty)
 				{
-					openedCellCount += AddCellsToOpen(currentCellCoordinates, cells, fieldBoundRectangle, cellCoordinatesToOpen.Enqueue);
+					openedCellCount += AddCellsToOpen(currentCellCoordinates, gameField, fieldBoundRectangle, cellCoordinatesToOpen.Enqueue);
 				}
 			}
 			while (cellCoordinatesToOpen.Count > 0);
@@ -64,7 +57,7 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 			return openedCellCount;
 		}
 
-		private static ushort AddCellsToOpen(Point2d currentCellCoordinates, Cell[,] cells, Rectangle fieldBoundRectangle, Action<Point2d> addCellCoordinatesToOpen)
+		private static ushort AddCellsToOpen(Point2d currentCellCoordinates, GameField gameField, Rectangle fieldBoundRectangle, Action<Point2d> addCellCoordinatesToOpen)
 		{
 			ushort openedCellCount = 0;
 
@@ -74,7 +67,7 @@ namespace TestTask.Minesweeper.Domain.Processors.Implementation
 
 				if (fieldBoundRectangle.Contains(targetCoordinates))
 				{
-					ref var cell = ref cells[targetCoordinates.Y, targetCoordinates.X];
+					ref var cell = ref gameField[targetCoordinates];
 
 					if (!cell.IsOpened && cell.Value != Enums.CellValue.Mine)
 					{

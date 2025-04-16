@@ -31,27 +31,27 @@ namespace TestTask.Minesweeper.Service.Api.Mappings
 
 			CreateMap<(Application.Commands.MakeTurn.Result Result, NewTurn NewTurn), GameState>()
 				.ForMember(destinationMember => destinationMember.GameId, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.NewTurn.GameId))
-				.ForMember(destinationMember => destinationMember.IsCompleted, memberOptions => memberOptions.MapFrom(sourceMember => IsCompleted(sourceMember.Result.TurnResult)))
-				.ForMember(destinationMember => destinationMember.Width, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.FieldSize.Width))
-				.ForMember(destinationMember => destinationMember.Height, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.FieldSize.Height))
+				.ForMember(destinationMember => destinationMember.IsCompleted, memberOptions => memberOptions.MapFrom(sourceMember => IsCompleted(sourceMember.Result.GameSessionStatus)))
+				.ForMember(destinationMember => destinationMember.Width, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.Field.Size.Width))
+				.ForMember(destinationMember => destinationMember.Height, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.Field.Size.Height))
 				.ForMember(destinationMember => destinationMember.MinesCount, memberOptions => memberOptions.MapFrom(sourceMember => sourceMember.Result.MinesCount))
 				.ForMember(destinationMember => destinationMember.Field
-							, memberOptions => memberOptions.MapFrom(sourceMember => ConvertFrom(sourceMember.Result.Field, sourceMember.Result.TurnResult)));
+							, memberOptions => memberOptions.MapFrom(sourceMember => ConvertFrom(sourceMember.Result.Field, sourceMember.Result.GameSessionStatus)));
 		}
 
-		private static FieldType[,] ConvertFrom(Domain.Values.Cell[,] field, Domain.Enums.TurnResult? turnResult)
+		private static FieldType[,] ConvertFrom(Domain.Values.GameField field, Domain.Enums.GameSessionStatus? gameSessionStatus)
 		{
-			var fieldTypes = new FieldType[field.GetLength(0), field.GetLength(1)];
+			var fieldTypes = new FieldType[field.Size.Height, field.Size.Width];
 
-			if (turnResult.HasValue && IsCompleted(turnResult.Value))
+			if (gameSessionStatus.HasValue && IsCompleted(gameSessionStatus.Value))
 			{
-				var forMineCase = turnResult.Value == Domain.Enums.TurnResult.Defeat ? FieldType.MineExploded : FieldType.Mine;
+				var forMineCase = gameSessionStatus.Value == Domain.Enums.GameSessionStatus.PlayerWasDefeated ? FieldType.MineExploded : FieldType.Mine;
 
 				for (var i = 0; i < fieldTypes.GetLength(0); i++)
 				{
 					for (var j = 0; j < fieldTypes.GetLength(1); j++)
 					{
-						var cell = field[i, j];
+						var cell = field[j, i];
 
 						if (cell.Value != Domain.Enums.CellValue.Mine)
 						{
@@ -70,7 +70,7 @@ namespace TestTask.Minesweeper.Service.Api.Mappings
 				{
 					for (var j = 0; j < fieldTypes.GetLength(1); j++)
 					{
-						var cell = field[i, j];
+						var cell = field[j, i];
 
 						if (cell.IsOpened)
 						{
@@ -87,10 +87,10 @@ namespace TestTask.Minesweeper.Service.Api.Mappings
 			return fieldTypes;
 		}
 
-		private static bool IsCompleted(Domain.Enums.TurnResult turnResult)
+		private static bool IsCompleted(Domain.Enums.GameSessionStatus status)
 		{
-			return turnResult == Domain.Enums.TurnResult.Defeat
-					|| turnResult == Domain.Enums.TurnResult.Victory;
+			return status == Domain.Enums.GameSessionStatus.PlayerWasDefeated
+					|| status == Domain.Enums.GameSessionStatus.PlayerWon;
 		}
 	}
 }

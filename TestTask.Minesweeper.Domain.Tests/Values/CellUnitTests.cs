@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 using TestTask.Minesweeper.Domain.Values;
 
 namespace TestTask.Minesweeper.Domain.Tests.Values
@@ -29,6 +31,17 @@ namespace TestTask.Minesweeper.Domain.Tests.Values
 
 				Assert.Equal(isOpened, instance.IsOpened);
 			});
+		}
+
+		/// <summary>
+		/// Tests <see cref="Cell"/>'s size in <see cref="byte"/>s.
+		/// </summary>
+		[Fact]
+		public void CellSizeInBytes_RepresentsAsByte_Valid()
+		{
+			var sizeInBytes = Marshal.SizeOf<Cell>();
+
+			Assert.Equal(1, sizeInBytes);
 		}
 	}
 }

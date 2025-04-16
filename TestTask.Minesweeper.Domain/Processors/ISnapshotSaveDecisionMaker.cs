@@ -6,14 +6,11 @@ namespace TestTask.Minesweeper.Domain.Processors
 	public interface ISnapshotSaveDecisionMaker
 	{
 		/// <summary>
-		/// Checks if necessary to save <paramref name="actual"/>.
+		/// Checks if necessary to save changes after <see cref="Entities.Turn"/>.
 		/// </summary>
-		/// <param name="previous">Previous <see cref="Entities.Snapshot"/>.</param>
-		/// <param name="actual">Actual <see cref="Entities.Snapshot"/>.</param>
-		/// <param name="resultOfProcess">Result of turn, which create <paramref name="actual"/>.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="previous"/> cannot be <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="actual"/> cannot be <see langword="null"/>.</exception>
+		/// <param name="resultOfProcess">Result of turn.</param>
+		/// <param name="countOfProcessedCells">Amount of processed cells after turn's solving.</param>
 		/// <returns><see langword="true"/> - yes; otherwise - no.</returns>
-		bool IsNeedToBeSaved(Entities.Snapshot previous, Entities.Snapshot actual, Enums.TurnResult resultOfProcess);
+		bool IsNeedToBeSaved(Enums.TurnResult resultOfProcess, ushort countOfProcessedCells);
 	}
 }

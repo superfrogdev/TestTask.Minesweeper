@@ -4,13 +4,13 @@ using TestTask.Minesweeper.Domain.Values;
 namespace TestTask.Minesweeper.Domain.Tests.Processors.Implementation
 {
 	/// <summary>
-	/// Represents unit tests for <see cref="GameFieldCreatorByRandom"/>.
+	/// Represents unit tests for <see cref="GameFieldGeneratorByRandom"/>.
 	/// </summary>
 	[Trait("Category", "Unit")]
-	public sealed class GameFieldCreatorByRandomUnitTests
+	public sealed class GameFieldGeneratorByRandomUnitTests
 	{
 		/// <summary>
-		/// Tests <see cref="GameFieldCreatorByRandom.Create(Size2d, ushort)"/> for valid generation.
+		/// Tests <see cref="GameFieldGeneratorByRandom.Generate(GameField, ushort)"/> for valid generation.
 		/// </summary>
 		/// <param name="seed">Value to initialize random number generator.</param>
 		[Theory]
@@ -23,7 +23,7 @@ namespace TestTask.Minesweeper.Domain.Tests.Processors.Implementation
 			//TODO: Change System.Random to own controlled implementation: what happens if implementation of System.Random will changed? - right, numbers will be other!
 			var random = new Random(seed);
 
-			var gameFieldCreator = new GameFieldCreatorByRandom(random);
+			var gameFieldGenerator = new GameFieldGeneratorByRandom(random);
 
 			var width = (ushort)random.Next(2, 31);
 
@@ -31,28 +31,15 @@ namespace TestTask.Minesweeper.Domain.Tests.Processors.Implementation
 
 			var minesCount = (ushort)random.Next(0, width * height);
 
-			var cells = gameFieldCreator.Create(new Size2d(width, height), minesCount);
+			var gameField = new GameField(new Size2d(width, height));
 
-			for (var y = 0; y < cells.GetLength(0); y++)
-			{
-				for (var x = 0; x < cells.GetLength(1); x++)
-				{
-					var value = cells[y, x].Value;
-
-					Console.Write(value != Enums.CellValue.Mine ? (byte)value : "M");
-				}
-
-				Console.WriteLine();
-			}
+			gameFieldGenerator.Generate(gameField, minesCount);
 
 			Assert.Multiple(() =>
 			{
-				Assert.Equal(width, cells.GetLength(1));
-
-				Assert.Equal(height, cells.GetLength(0));
-
 				ushort actualMineCount = 0;
-				foreach (var current in cells)
+
+				foreach (var current in gameField)
 				{
 					if (current.Value == Enums.CellValue.Mine)
 					{
@@ -74,13 +61,13 @@ namespace TestTask.Minesweeper.Domain.Tests.Processors.Implementation
 					new(0, -1)
 				];
 
-				var fieldBoundRectangle = new Rectangle(Point2d.Zero, new Size2d((ushort)cells.GetLength(1), (ushort)cells.GetLength(0)));
+				var fieldBoundRectangle = new Rectangle(Point2d.Zero, gameField.Size);
 
-				for (var y = 0; y < cells.GetLength(0); y++)
+				for (var y = 0; y < gameField.Size.Height; y++)
 				{
-					for (var x = 0; x < cells.GetLength(1); x++)
+					for (var x = 0; x < gameField.Size.Width; x++)
 					{
-						var cell = cells[y, x];
+						var cell = gameField[x, y];
 
 						if (cell.Value != Enums.CellValue.Mine)
 						{
@@ -92,7 +79,7 @@ namespace TestTask.Minesweeper.Domain.Tests.Processors.Implementation
 
 								if (fieldBoundRectangle.Contains(targetCoordinates))
 								{
-									var targetCell = cells[targetCoordinates.Y, targetCoordinates.X];
+									var targetCell = gameField[targetCoordinates];
 
 									if (targetCell.Value == Enums.CellValue.Mine)
 									{
